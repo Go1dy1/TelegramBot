@@ -17,7 +17,6 @@ class DbUserStorage implements UserStorageInterface
         ];
         try {
             $this->pdo = new PDO($dsn, $db_config['user'], $db_config['pass'], $options);
-            echo 'Connected successfully';
 
         }
         catch (PDOException $e)
@@ -39,8 +38,15 @@ class DbUserStorage implements UserStorageInterface
     }
     public function getUsers()
     {
+        $users = [];
         $stmt = $this->pdo->query('SELECT telegram_id, name FROM users');
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $db_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($db_users as $row)
+        {
+            $users[$row['telegram_id']] = $row['name'];
+        }
+
+        return $users;
     }
     public function getUsersName()
     {

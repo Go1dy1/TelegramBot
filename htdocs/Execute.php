@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $bot->sendAudio($params);
                 break;
             case 'video/mp4':
+            case 'video/quicktime':
             case 'video/mpeg':
             case 'video/webm':
                 $bot->sendVideo($params);
@@ -45,7 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             default:
                 $response['error'] = 'Unsupported file type!';
         }
-        $response['success'] = 'File sent successfully!';
+        if (!isset($response['error'])) {
+            $response['success'] = 'File sent successfully!';
+        }
     } else {
         $response['error'] = 'Message or file is required!';
     }

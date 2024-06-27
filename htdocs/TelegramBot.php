@@ -51,18 +51,14 @@ class TelegramBot {
         return json_decode($response);
     }
 
-    public function __call($name, $arguments) {
-        $params = $arguments[0];
-
-        if (!isset($params['chat_id'])) {
-            throw new InvalidArgumentException("chat_id is required in arguments for method $name");
-        }
+    public function __call($name, $arguments = []) {
+        $params = isset($arguments[0]) ? $arguments[0] : $arguments ;
 
         if (isset($params['media'])) {
             $params[$this->getMediaType($name)] = new CURLFile(realpath($params['media']));
-            $this->makeRequest($name, $params, true);
+            return $this->makeRequest($name, $params, true);
         } else {
-            $this->makeRequest($name, $params, false);
+            return $this->makeRequest($name, $params, false);
         }
     }
 
@@ -76,24 +72,4 @@ class TelegramBot {
         ];
         return $mediaTypes[$methodName] ?? null;
     }
-
-    /*
-      public function __call($name, $arguments)
-    {
-        $stmt = $pdo->query('SELECT telegram_id FROM users');
-        $users = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($users as $user_id) {
-            $params = array_merge($arguments[0], ['chat_id' => $user_id]);
-            if (isset($arguments[0]['media']))
-            {
-                $params[$this->getMediaType($name)] = new CURLFile(realpath($arguments[0]['media']));
-                $this->makeRequest($name, $params, true);
-            }
-            else {
-                $this->makeRequest($name, $params, false);
-            }
-        }
-    }
-     */
 }

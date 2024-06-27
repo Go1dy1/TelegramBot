@@ -6,21 +6,23 @@ class telegramUserManager {
     public $storage;
     public $bot;
 
-    public function __construct( TelegramBot $bot, DbUserStorage $storage) {
+    public function __construct( TelegramBot $bot, UserStorageInterface $storage) {
         $this->bot = $bot;
         $this->storage = $storage;
+
+        $this->fetchAndStoreUsers();
     }
     public function fetchAndStoreUsers() {
         // Получение обновлений от Telegram
-        $response = $this->bot->getUpdates([]);
+        $response = $this->bot->getUpdates();
 
         $unique_users = [];
 
-        if (isset($response['result'])) {
-            foreach ($response['result'] as $update) {
-                if (isset($update['message']['from']['id'])) {
-                    $user_id = $update['message']['from']['id'];
-                    $user_name = $update['message']['from']['username'] ?? 'No username';
+        if (isset($response->result)) {
+            foreach ($response->result as $update) {
+                if (isset($update->message->from->id)) {
+                    $user_id = $update->message->from->id;
+                    $user_name = $update->message->from->username ?? 'No username';
 
                     if (!isset($unique_users[$user_id])) {
                         $unique_users[$user_id] = $user_name;

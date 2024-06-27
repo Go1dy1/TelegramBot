@@ -1,24 +1,21 @@
 <?php
 require_once 'TelegramBot.php';
+require_once 'FileUserStorage.php';
 require_once 'telegramUserManager.php';
 require_once 'config.php';
 require_once 'DbUserStorage.php';
 
 $dbUserStorage = new DbUserStorage();
 
-$dbUserStorage->connectDatabase($db_config);
+//$dbUserStorage->connectDatabase($db_config);
+$fileUserStorage = new FileUserStorage('users.json');
 
 $bot = new TelegramBot($token);
 
-$userManager = new telegramUserManager($bot, $dbUserStorage);
+$userManager = new telegramUserManager($bot, $fileUserStorage);
 
-$db_chats=$userManager->getUsers();
+$chats = $userManager->getUsers();
 
-$chats = [];
-foreach ($db_chats as $row)
-{
-    $chats[$row['telegram_id']] = $row['name'];
-}
 
 ?>
 
