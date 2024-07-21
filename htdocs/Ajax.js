@@ -1,26 +1,24 @@
-let servResponse = document.querySelector('#response');
+$(function () {
+    $('#ajax-form').on('submit', function (e) {
+        e.preventDefault();
+        let data = new FormData(this);
 
-document.forms.ourForm.onsubmit =function (e) {
-e.preventDefault();
+        $.each($('#file')[0].files, function(i, file) {
+            data.append('file-'+i, file);
+        });
 
-var userInput = document.forms.ourForm.message.value;
 
-userInput= encodeURIComponent(userInput);
-
-var xhr = new XMLHttpRequest();
-
-xhr.open('POST','Execute.php');
-
-var formData = new FormData(document.forms.ourForm);
-
-//xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-
-xhr.onreadystatechange = function (){
-    if (xhr.readyState === 4 && xhr.status === 200)
-    {
-        servResponse.textContent = xhr.responseText;
-    }
-}
-
-xhr.send(formData);
-};
+        $.ajax({
+            url: 'Execute.php',
+            data: data,
+            dataType: 'json',
+            cache: false,
+            method: 'POST',
+            contentType: false,
+            processData: false,
+            success: function(response){
+                console.log(response);
+            }
+        });
+    });
+})

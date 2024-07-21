@@ -1,34 +1,27 @@
 <?php
-require_once './TelegramBot.php';
+require_once 'TelegramBot.php';
+require_once 'config.php';
 
-$token = '7229935037:AAFqPbL2bXNTYixRtM9CnxpD7Ex7zh5nt5Q';
+$bot = new TelegramBot($token);
 
-$db_config = [
-    'host' => 'mysql',
-    'dbname' => 'Telegram_bot',
-    'user' => 'Telegram_bot',
-    'pass' => 'Telegram_bot'
-];
-$bot = new TelegramBot($token, $db_config);
+$response = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST')
-{
-    $users = $bot->getUsers();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $chat_id = $_POST['chat_id'];
     $message = $_POST['message'];
 
-    if (!empty($message) && empty($_FILES['file']['tmp_name']))
-    {
-        $bot->sendMessage(['text' => $message]);
-        echo 'Message sent successfully!';
-    }
-    elseif (!empty($_FILES['file']['tmp_name']))
-    {
+    if (empty($chat_id)) {
+        $response['error'] = 'Chat ID is required!';
+    } elseif (!empty($message) && empty($_FILES['file']['tmp_name'])) {
+        $bot->sendMessage(['chat_id' => $chat_id, 'text' => $message]);
+        $response['success'] = 'Message sent successfully!';
+    } elseif (!empty($_FILES['file']['tmp_name'])) {
         $filePath = $_FILES['file']['tmp_name'];
         $filename = $_FILES['file']['name'];
         $caption = !empty($message) ? $message : '';
 
         $fileType = mime_content_type($filePath);
-        $params = ['media' => $filePath, 'caption' => $caption];
+        $params = ['chat_id' => $chat_id, 'media' => $filePath, 'caption' => $caption];
 
         switch ($fileType) {
             case 'image/jpeg':
@@ -39,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 $bot->sendAudio($params);
                 break;
             case 'video/mp4':
+            case 'video/quicktime':
             case 'video/mpeg':
             case 'video/webm':
                 $bot->sendVideo($params);
@@ -50,11 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 $bot->sendVoice($params);
                 break;
             default:
-                echo 'Unsupported file type';
+                $response['error'] = 'Unsupported file type!';
         }
-        echo 'File sent successfully!';
-    }
-    else {
-        echo 'Empty message!';
+        if (!isset($response['error'])) {
+            $response['success'] = 'File sent successfully!';
+        }
+    } else {
+        $response['error'] = 'Message or file is required!';
     }
 }
+
+header('Content-Type: application/json');
+echo json_encode($response);
+?>
